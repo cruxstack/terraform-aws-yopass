@@ -1,0 +1,36 @@
+{
+  "name": "Terraform",
+  "dockerFile": "Dockerfile",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2.0.1": {},
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.codeActionsOnSave": {
+          "source.fixAll": true
+        },
+        "editor.formatOnSave": true,
+        "editor.formatOnType": false,
+        "editor.inlineSuggest.enabled": true,
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "[markdown]": {
+          "editor.rulers": [
+            80
+          ]
+        }
+      },
+      "extensions": [
+        "darkriszty.markdown-table-prettify",
+        "dbaeumer.vscode-eslint",
+        "editorconfig.editorconfig",
+        "github.copilot",
+        "github.vscode-github-actions",
+        "hashicorp.terraform",
+        "ms-azuretools.vscode-docker",
+        "tsandall.opa",
+        "VisualStudioExptTeam.vscodeintellicode",
+      ],
+    }
+  },
+}
