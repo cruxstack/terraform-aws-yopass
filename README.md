@@ -31,11 +31,12 @@ module "yopass" {
 
 ## Inputs
 
-| Name                                 | Description                                  |  Type  | Default  | Required |
-|--------------------------------------|----------------------------------------------|:------:|:--------:|:--------:|
-| `name`                               | The name of your Yopass server.              | string | "yopass" |    no    |
-| `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets. |  int   |  10000   |    no    |
-| `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets. |  int   |  10000   |    no    |
+| Name                                 | Description                                             |  Type  | Default  | Required |
+|--------------------------------------|---------------------------------------------------------|:------:|:--------:|:--------:|
+| `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets.            |  int   |  10000   |    no    |
+| `yopass_version`                     | Version of Yopass to deploy.                            | string | "latest" |    no    |
+| `aws_account_id`                     | The AWS account ID that the module will be deployed in. | string |    ""    |    no    |
+| `aws_region_name`                    | The AWS region name where the module will be deployed.  | string |    ""    |    no    |
 
 ### Note
 
@@ -46,9 +47,10 @@ for more details on these variables.
 
 ## Outputs
 
-| Name            | Description                                                   |
-|-----------------|---------------------------------------------------------------|
-| `lambda_fn_arn` | The ARN of the AWS Lambda function running the Yopass server. |
+| Name                      | Description                                                             |
+|---------------------------|-------------------------------------------------------------------------|
+| `lambda_fn_arn`           | The ARN of the AWS Lambda function running the Yopass server.           |
+| `lambda_fn_execution_url` | The URL for invoking the AWS Lambda function running the Yopass server. |
 
 ## Contributing
 
