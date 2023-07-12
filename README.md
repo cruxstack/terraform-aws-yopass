@@ -17,6 +17,8 @@ service for generating and sharing secrets in a secure manner. You can visit the
 module "yopass" {
   source = "sgtoj/yopass/aws"
 
+  name                               = "yopass"
+  yopass_version                     = "latest"
   yopass_encrypted_secret_max_length = 10000
 }
 ```
@@ -32,6 +34,7 @@ module "yopass" {
 | Name                                 | Description                                  |  Type  | Default  | Required |
 |--------------------------------------|----------------------------------------------|:------:|:--------:|:--------:|
 | `name`                               | The name of your Yopass server.              | string | "yopass" |    no    |
+| `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets. |  int   |  10000   |    no    |
 | `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets. |  int   |  10000   |    no    |
 
 ### Note
