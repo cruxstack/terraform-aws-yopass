@@ -73,7 +73,7 @@ module "yopass_website" {
 }
 
 module "yopass_website_uploader" {
-  source = "./modules/s3-uploader"
+  source = "./modules/uploader"
 
   artifact_dst_bucket_arn  = module.yopass_website.s3_bucket_arn
   artifact_dst_bucket_path = "/"
