@@ -35,7 +35,8 @@ module "yopass" {
 ## Requirements
 
 - Terraform 0.13.0 or later
-- AWS provider 5.0.0 or later
+- AWS provider
+- Docker provider
 - Docker installed and running on the machine where Terraform is executed
 
 ## Inputs
