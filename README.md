@@ -12,6 +12,18 @@ users to generate random secrets or upload their own, and securely share them
 with others. Check out the [demo website](https://yopass.se/) to see Yopass in
 action.
 
+## Features
+
+- **Secure Secret Sharing**: Yopass is designed for secure secret sharing. It
+  uses client-side encryption to ensure that your secrets remain private.
+- **Serverless Deployment**: This module deploys Yopass using AWS Lambda,
+  enabling a highly scalable and maintenance-free setup.
+- **Cost-Effective**: Thanks to the pay-per-use model of AWS Lambda and
+  DynamoDB, you only pay for what you use, making this a very cost-effective way
+  to run Yopass.
+- **CloudFront Distribution**: The Yopass website is served via a CloudFront
+  distribution for a fast and secure user experience globally.
+
 ## Prerequisites
 
 - Terraform v0.13.0 or newer
