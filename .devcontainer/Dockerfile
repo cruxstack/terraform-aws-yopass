@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/base:1-focal
+FROM mcr.microsoft.com/devcontainers/base:jammy
 
 # Install AWS CLI
 RUN apt-get update && \
@@ -36,6 +36,5 @@ RUN terraform --version \
     && aws --version \
     && node --version \
     && npm --version \
-    && opa version \
     && tsc --version \
     && docker --version

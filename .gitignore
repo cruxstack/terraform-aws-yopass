@@ -38,7 +38,8 @@ lib-cov
 dockerfile.*.bak
 
 # general
-tmp
+tmp/
+!**/.gitkeep
 .DS_Store
 .env
 .env.local
