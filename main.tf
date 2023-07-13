@@ -76,9 +76,6 @@ module "yopass_website_uploader" {
   source  = "sgtoj/s3-zip-uploader/aws"
   version = "0.1.0"
 
-  artifact_dst_bucket_arn  = module.yopass_website.s3_bucket_arn
-  artifact_dst_bucket_path = "/"
-  artifact_src_bucket_arn  = module.yopass_website.s3_bucket_arn
   artifact_src_bucket_path = "/_artifacts/assets.zip"
   artifact_src_local_path  = module.yopass_website_assets.artifact_package_path
 
