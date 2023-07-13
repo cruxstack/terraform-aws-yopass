@@ -12,13 +12,13 @@ ARG YOPASS_FRONTEND_URL="https://my-domain.com"
 ARG YOPASS_BACKEND_URL="https://my-domain.com"
 RUN cd website && \
     yarn install && \
-    PUBLIC_URL='$YOPASS_FRONTEND_URL' REACT_APP_BACKEND_URL='$YOPASS_BACKEND_URL' yarn build
+    PUBLIC_URL="$YOPASS_FRONTEND_URL" REACT_APP_BACKEND_URL="$YOPASS_BACKEND_URL" yarn build
 
 # ------------------------------------------------------------------ package ---
 
 FROM alpine:latest as package
 
-COPY --from=base /opt/app/website/build /opt/app/dist
+COPY --from=base /opt/app/website/build/ /opt/app/dist/
 
 RUN apk add zip \
     && cd /opt/app/dist \
