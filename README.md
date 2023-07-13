@@ -1,9 +1,16 @@
 # Terraform Module: Yopass (via AWS Serverless)
 
+
 This Terraform module deploys a [Yopass](https://github.com/jhaals/yopass)
-server in a serverless architecture using AWS Lambda and DynamoDB. Yopass is a
-service for generating and sharing secrets in a secure manner. You can visit the
-[demo website](https://yopass.se/) to see Yopass in action.
+server using a serverless architecture on AWS. By leveraging AWS Lambda,
+DynamoDB, and CloudFront, this module allows you to run Yopass in a highly
+available, scalable, and cost-effective manner, adhering to a pay-per-use model.
+
+[Yopass](https://github.com/jhaals/yopass) is an open-source project for
+generating and sharing secrets securely. It provides an intuitive interface for
+users to generate random secrets or upload their own, and securely share them
+with others. Check out the [demo website](https://yopass.se/) to see Yopass in
+action.
 
 ## Prerequisites
 
@@ -18,8 +25,10 @@ module "yopass" {
   source = "sgtoj/yopass/aws"
 
   name                               = "yopass"
-  yopass_version                     = "latest"
   yopass_encrypted_secret_max_length = 10000
+  yopass_version                     = "latest"
+  website_domain_name                = "yopass.example.com"
+  website_certificate_arn            = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
 }
 ```
 
@@ -31,12 +40,15 @@ module "yopass" {
 
 ## Inputs
 
-| Name                                 | Description                                             |  Type  | Default  | Required |
-|--------------------------------------|---------------------------------------------------------|:------:|:--------:|:--------:|
-| `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets.            |  int   |  10000   |    no    |
-| `yopass_version`                     | Version of Yopass to deploy.                            | string | "latest" |    no    |
-| `aws_account_id`                     | The AWS account ID that the module will be deployed in. | string |    ""    |    no    |
-| `aws_region_name`                    | The AWS region name where the module will be deployed.  | string |    ""    |    no    |
+| Name                                 | Description                                                      |  Type  | Default  | Required |
+|--------------------------------------|------------------------------------------------------------------|:------:|:--------:|:--------:|
+| `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets.                     | number |  10000   |    no    |
+| `yopass_version`                     | Version of Yopass to deploy.                                     | string | "latest" |    no    |
+| `website_domain_name`                | Domain name for Yopass website.                                  | string |    ""    |   yes    |
+| `website_certificate_arn`            | ARN of the ACM certificate for the domain name.                  | string |    ""    |   yes    |
+| `website_waf_acl_id`                 | ID of the WAF ACL to associate with the CloudFront distribution. | string |    ""    |    no    |
+| `aws_account_id`                     | The AWS account ID that the module will be deployed in.          | string |    ""    |    no    |
+| `aws_region_name`                    | The AWS region name where the module will be deployed.           | string |    ""    |    no    |
 
 ### Note
 
@@ -47,10 +59,11 @@ for more details on these variables.
 
 ## Outputs
 
-| Name                      | Description                                                             |
-|---------------------------|-------------------------------------------------------------------------|
-| `lambda_fn_arn`           | The ARN of the AWS Lambda function running the Yopass server.           |
-| `lambda_fn_execution_url` | The URL for invoking the AWS Lambda function running the Yopass server. |
+| Name                                | Description                                                                   |
+|-------------------------------------|-------------------------------------------------------------------------------|
+| `server_apigw_url`                  | The URL of the Yopass server API Gateway.                                     |
+| `website_cloudfront_domain_name`    | The domain name of the CloudFront distribution serving the Yopass website.    |
+| `website_cloudfront_hosted_zone_id` | The hosted zone id of the CloudFront distribution serving the Yopass website. |
 
 ## Contributing
 

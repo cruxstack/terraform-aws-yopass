@@ -5,6 +5,7 @@ FROM golang:latest as base
 ARG YOPASS_VERSION=latest
 
 ENV GOOS=linux
+ENV GOARCH=amd64
 
 RUN mkdir -p /opt/app
 WORKDIR /opt/app
