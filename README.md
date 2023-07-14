@@ -57,6 +57,7 @@ module "yopass" {
 |--------------------------------------|------------------------------------------------------------------|:------:|:--------:|:--------:|
 | `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets.                     | number |  10000   |    no    |
 | `yopass_version`                     | Version of Yopass to deploy.                                     | string | "latest" |    no    |
+| `server_waf_acl_id`                  | ID of the WAF ACL to associate with the API Gateway.             | string |    ""    |    no    |
 | `website_domain_name`                | Domain name for Yopass website.                                  | string |    ""    |   yes    |
 | `website_certificate_arn`            | ARN of the ACM certificate for the domain name.                  | string |    ""    |   yes    |
 | `website_waf_acl_id`                 | ID of the WAF ACL to associate with the CloudFront distribution. | string |    ""    |    no    |
@@ -74,6 +75,7 @@ for more details on these variables.
 
 | Name                                | Description                                                                   |
 |-------------------------------------|-------------------------------------------------------------------------------|
+| `server_apigw_ID`                   | The ID of the Yopass server API Gateway.                                      |
 | `server_apigw_url`                  | The URL of the Yopass server API Gateway.                                     |
 | `website_cloudfront_domain_name`    | The domain name of the CloudFront distribution serving the Yopass website.    |
 | `website_cloudfront_hosted_zone_id` | The hosted zone id of the CloudFront distribution serving the Yopass website. |
