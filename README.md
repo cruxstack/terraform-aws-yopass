@@ -34,11 +34,11 @@ action.
 
 ```hcl
 module "yopass" {
-  source = "sgtoj/yopass/aws"
+  source  = "sgtoj/yopass/aws"
+  version = "x.x.x"
 
   name                               = "yopass"
   yopass_encrypted_secret_max_length = 10000
-  yopass_version                     = "latest"
   website_domain_name                = "yopass.example.com"
   website_certificate_arn            = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
 }
