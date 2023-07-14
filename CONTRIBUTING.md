@@ -10,7 +10,7 @@ This repository includes a configuration for a development container using the
 This setup allows you to develop within a Docker container that already has all
 the necessary tools and dependencies installed.
 
-The development container is based on Ubuntu 20.04 (Focal) and includes the
+The development container is based on Ubuntu 22.04 (Jammy) and includes the
 following tools:
 
 - AWS CLI
