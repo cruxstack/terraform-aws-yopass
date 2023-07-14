@@ -19,15 +19,22 @@ module "yopass_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
 
-  name    = coalesce(module.this.name, var.name, "yopass")
+  name    = coalesce(module.this.name, var.name, "yopass-${random_string.yopass_random_suffix.result}")
   context = module.this.context
+}
+
+# only appliable if name variable was not set
+resource "random_string" "yopass_random_suffix" {
+  length  = 6
+  special = false
+  upper   = false
 }
 
 # ------------------------------------------------------------------ website ---
 
 module "yopass_website_assets" {
   source  = "sgtoj/artifact-packager/docker"
-  version = "1.2.1"
+  version = "1.2.3"
 
   attributes             = ["website"]
   artifact_src_path      = "/tmp/package.zip"
@@ -63,7 +70,7 @@ module "yopass_website" {
 
 module "yopass_website_uploader" {
   source  = "sgtoj/s3-zip-uploader/aws"
-  version = "0.1.0"
+  version = "1.0.1"
 
   artifact_dst_bucket_arn = module.yopass_website.s3_bucket_arn
   artifact_src_local_path = module.yopass_website_assets.artifact_package_path
@@ -79,7 +86,7 @@ module "yopass_website_uploader" {
 
 module "yopass_server_code" {
   source  = "sgtoj/artifact-packager/docker"
-  version = "1.2.1"
+  version = "1.2.3"
 
   attributes             = ["server"]
   artifact_src_path      = "/tmp/package.zip"
