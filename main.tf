@@ -3,7 +3,7 @@ locals {
   aws_account_id  = try(coalesce(var.aws_account_id, data.aws_caller_identity.current[0].account_id), "")
   aws_region_name = try(coalesce(var.aws_region_name, data.aws_region.current[0].name), "")
 
-  yopass_server_apigw_url = module.yopass_label.enabled ? aws_api_gateway_deployment.this[0].invoke_url : ""
+  yopass_server_apigw_url = module.yopass_label.enabled ? aws_api_gateway_stage.this[0].invoke_url : ""
 }
 
 data "aws_caller_identity" "current" {
