@@ -17,9 +17,9 @@ variable "yopass_version" {
   default     = "latest"
 }
 
-variable "server_waf_acl_id" {
+variable "server_waf_acl_name" {
   type        = string
-  description = "ID of the WAF ACL to associate with the API Gateway."
+  description = "Name of the WAF ACL to associate with the API Gateway."
   default     = ""
 }
 
@@ -33,9 +33,9 @@ variable "website_certificate_arn" {
   description = "ARN of the ACM certificate for the domain name."
 }
 
-variable "website_waf_acl_id" {
+variable "website_waf_acl_name" {
   type        = string
-  description = "ID of the WAF ACL to associate with the CloudFront distribution."
+  description = "Name of the WAF ACL to associate with the CloudFront distribution."
   default     = ""
 }
 

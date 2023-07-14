@@ -59,7 +59,7 @@ module "yopass_website" {
   aliases             = [var.website_domain_name]
   acm_certificate_arn = var.website_certificate_arn
   dns_alias_enabled   = false
-  web_acl_id          = var.website_waf_acl_id
+  web_acl_id          = try(data.aws_wafv2_web_acl.website[0].arn, "")
 
   cloudfront_access_log_create_bucket = false
   cloudfront_access_logging_enabled   = false
@@ -82,6 +82,14 @@ module "yopass_website_uploader" {
     module.yopass_website_assets,
   ]
 }
+
+data "aws_wafv2_web_acl" "website" {
+  count = module.yopass_label.enabled && var.website_waf_acl_name != "" ? 1 : 0
+
+  name  = var.website_waf_acl_name
+  scope = "CLOUDFRONT"
+}
+
 
 # ------------------------------------------------------------------- server ---
 
@@ -188,8 +196,9 @@ resource "aws_api_gateway_deployment" "this" {
 resource "aws_api_gateway_stage" "this" {
   count = module.yopass_label.enabled ? 1 : 0
 
-  rest_api_id = aws_api_gateway_rest_api.this[0].id
-  stage_name  = "live"
+  deployment_id = aws_api_gateway_deployment.this[0].id
+  rest_api_id   = aws_api_gateway_rest_api.this[0].id
+  stage_name    = "live"
 
   depends_on = [
     aws_api_gateway_deployment.this
@@ -207,19 +216,18 @@ resource "aws_lambda_permission" "apigw" {
 }
 
 resource "aws_wafv2_web_acl_association" "this" {
-  count = module.yopass_label.enabled && var.server_waf_acl_id != "" ? 1 : 0
+  count = module.yopass_label.enabled && var.server_waf_acl_name != "" ? 1 : 0
 
   resource_arn = aws_api_gateway_stage.this[0].arn
-  web_acl_arn  = data.aws_wafv2_web_acl.this[0].arn
+  web_acl_arn  = data.aws_wafv2_web_acl.server[0].arn
 }
 
-data "aws_wafv2_web_acl" "this" {
-  count = module.yopass_label.enabled && var.server_waf_acl_id != "" ? 1 : 0
+data "aws_wafv2_web_acl" "server" {
+  count = module.yopass_label.enabled && var.server_waf_acl_name != "" ? 1 : 0
 
-  id    = var.server_waf_acl_id
+  name  = var.server_waf_acl_name
   scope = "REGIONAL"
 }
-
 
 # ---------------------------------------------------------------------- ddb ---
 
