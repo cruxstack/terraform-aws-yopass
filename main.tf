@@ -1,8 +1,9 @@
 locals {
+  name            = coalesce(module.this.name, var.name, "yopass-${random_string.yopass_random_suffix.result}")
   aws_account_id  = try(coalesce(var.aws_account_id, data.aws_caller_identity.current[0].account_id), "")
   aws_region_name = try(coalesce(var.aws_region_name, data.aws_region.current[0].name), "")
 
-  yopass_server_api_endpoint = module.yopass_label.enabled ? aws_api_gateway_deployment.this[0].invoke_url : ""
+  yopass_server_apigw_url = module.yopass_label.enabled ? aws_api_gateway_deployment.this[0].invoke_url : ""
 }
 
 data "aws_caller_identity" "current" {
@@ -19,7 +20,7 @@ module "yopass_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
 
-  name    = coalesce(module.this.name, var.name, "yopass-${random_string.yopass_random_suffix.result}")
+  name    = local.name
   context = module.this.context
 }
 
@@ -45,7 +46,7 @@ module "yopass_website_assets" {
   docker_build_args = {
     YOPASS_VERSION      = var.yopass_version
     YOPASS_FRONTEND_URL = "https://${var.website_domain_name}"
-    YOPASS_BACKEND_URL  = trim(local.yopass_server_api_endpoint, "/")
+    YOPASS_BACKEND_URL  = trim(local.yopass_server_apigw_url, "/")
   }
 
   context = module.yopass_label.context
@@ -140,7 +141,7 @@ resource "aws_api_gateway_rest_api" "this" {
   count = module.yopass_label.enabled ? 1 : 0
 
   name        = module.yopass_label.id
-  description = "YoPass API"
+  description = "YoPass Server API"
   tags        = module.yopass_label.tags
 }
 
@@ -176,11 +177,22 @@ resource "aws_api_gateway_integration" "lambda" {
 resource "aws_api_gateway_deployment" "this" {
   count = module.yopass_label.enabled ? 1 : 0
 
+  rest_api_id       = aws_api_gateway_rest_api.this[0].id
+  stage_description = "live"
+
+  depends_on = [
+    aws_api_gateway_integration.lambda
+  ]
+}
+
+resource "aws_api_gateway_stage" "this" {
+  count = module.yopass_label.enabled ? 1 : 0
+
   rest_api_id = aws_api_gateway_rest_api.this[0].id
   stage_name  = "live"
 
   depends_on = [
-    aws_api_gateway_integration.lambda
+    aws_api_gateway_deployment.this
   ]
 }
 
@@ -193,6 +205,21 @@ resource "aws_lambda_permission" "apigw" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.this[0].execution_arn}/*/*"
 }
+
+resource "aws_wafv2_web_acl_association" "this" {
+  count = module.yopass_label.enabled && var.server_waf_acl_id != "" ? 1 : 0
+
+  resource_arn = aws_api_gateway_stage.this[0].arn
+  web_acl_arn  = data.aws_wafv2_web_acl.this[0].arn
+}
+
+data "aws_wafv2_web_acl" "this" {
+  count = module.yopass_label.enabled && var.server_waf_acl_id != "" ? 1 : 0
+
+  id    = var.server_waf_acl_id
+  scope = "REGIONAL"
+}
+
 
 # ---------------------------------------------------------------------- ddb ---
 
