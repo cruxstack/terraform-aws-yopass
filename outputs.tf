@@ -1,5 +1,10 @@
+output "server_apigw_id" {
+  value       = module.yopass_label.enabled ? aws_api_gateway_rest_api.this[0].id : ""
+  description = "The ID of the Yopass server API Gateway."
+}
+
 output "server_apigw_url" {
-  value       = local.yopass_server_api_endpoint
+  value       = local.yopass_server_apigw_url
   description = "The URL of the Yopass server API Gateway."
 }
 

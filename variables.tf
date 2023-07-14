@@ -17,6 +17,12 @@ variable "yopass_version" {
   default     = "latest"
 }
 
+variable "server_waf_acl_id" {
+  type        = string
+  description = "ID of the WAF ACL to associate with the API Gateway."
+  default     = ""
+}
+
 variable "website_domain_name" {
   type        = string
   description = "Domain name for Yopass website."
