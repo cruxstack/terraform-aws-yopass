@@ -5,7 +5,7 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2.0.1": {},
   },
   "containerEnv": {
-    "TF_PLUGIN_CACHE_DIR": "/workspaces/terraform-aws-yopass/.devcontainers/tmp/.terraform.d/"
+    "TF_PLUGIN_CACHE_DIR": "/workspaces/terraform-aws-yopass/.devcontainer/tmp/.terraform.d/"
   },
   "customizations": {
     "vscode": {
