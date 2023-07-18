@@ -10,6 +10,8 @@ module "yopass" {
 
   website_domain_name     = local.domain_name
   website_certificate_arn = module.ssl_certificate.arn
+
+  tags = { tf_module = "sgtoj/yopass/aws", tf_module_example = "complete" }
 }
 
 # ---------------------------------------------------------------------- dns ---
