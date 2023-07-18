@@ -6,6 +6,7 @@ ARG YOPASS_VERSION=latest
 
 ENV GOOS=linux
 ENV GOARCH=amd64
+ENV CGO_ENABLED=0
 
 RUN mkdir -p /opt/app
 WORKDIR /opt/app

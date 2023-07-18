@@ -1,28 +1,24 @@
 # Terraform Module: Yopass (via AWS Serverless)
 
-
 This Terraform module deploys a [Yopass](https://github.com/jhaals/yopass)
-server using a serverless architecture on AWS. By leveraging AWS Lambda,
-DynamoDB, and CloudFront, this module allows you to run Yopass in a highly
-available, scalable, and cost-effective manner, adhering to a pay-per-use model.
-
-[Yopass](https://github.com/jhaals/yopass) is an open-source project for
-generating and sharing secrets securely. It provides an intuitive interface for
-users to generate random secrets or upload their own, and securely share them
-with others. Check out the [demo website](https://yopass.se/) to see Yopass in
-action.
+server using a serverless architecture on AWS. It leverages AWS Lambda,
+DynamoDB, and CloudFront to provide a highly available, scalable, and
+cost-effective solution. The design adheres to a pay-per-use model.
 
 ## Features
 
-- **Secure Secret Sharing**: Yopass is designed for secure secret sharing. It
-  uses client-side encryption to ensure that your secrets remain private.
-- **Serverless Deployment**: This module deploys Yopass using AWS Lambda,
-  enabling a highly scalable and maintenance-free setup.
-- **Cost-Effective**: Thanks to the pay-per-use model of AWS Lambda and
-  DynamoDB, you only pay for what you use, making this a very cost-effective way
-  to run Yopass.
+- **Secure Secret Sharing**: Yopass is designed for secure secret sharing, and
+  client-side encryption ensures your secrets remain private.
+- **Serverless Deployment**: Yopass is deployed using AWS Lambda, enabling a
+  highly scalable and maintenance-free setup.
+- **Cost-Effective**: The pay-per-use model of AWS Lambda and DynamoDB ensures
+  you only pay for what you use.
 - **CloudFront Distribution**: The Yopass website is served via a CloudFront
   distribution for a fast and secure user experience globally.
+- **Automated Deployment**: The entire Yopass deployment, including the server,
+  website, and database, is handled by Terraform, providing an easy and repeatable deployment process.
+- **User Authentication Layer**: An optional user authentication layer is
+  available, securing access to the Yopass website using AWS Cognito.
 
 ## Prerequisites
 
@@ -53,23 +49,27 @@ module "yopass" {
 
 ## Inputs
 
-| Name                                 | Description                                                        |  Type  | Default  | Required |
-|--------------------------------------|--------------------------------------------------------------------|:------:|:--------:|:--------:|
-| `yopass_encrypted_secret_max_length` | The maximum length of the encrypted secrets.                       | number |  10000   |    no    |
-| `yopass_version`                     | Version of Yopass to deploy.                                       | string | "latest" |    no    |
-| `server_waf_acl_name`                | Name of the WAF ACL to associate with the API Gateway.             | string |    ""    |    no    |
-| `website_domain_name`                | Domain name for Yopass website.                                    | string |    ""    |   yes    |
-| `website_certificate_arn`            | ARN of the ACM certificate for the domain name.                    | string |    ""    |   yes    |
-| `website_waf_acl_name`               | Name of the WAF ACL to associate with the CloudFront distribution. | string |    ""    |    no    |
-| `aws_account_id`                     | The AWS account ID that the module will be deployed in.            | string |    ""    |    no    |
-| `aws_region_name`                    | The AWS region name where the module will be deployed.             | string |    ""    |    no    |
+In addition to the variables documented below, this module includes several
+other optional variables (e.g., `name`, `tags`, etc.) provided by the
+`cloudposse/label/null` module. Please refer to the [`cloudposse/label` documentation](https://registry.terraform.io/modules/cloudposse/label/null/latest) for more details on these variables.
 
-### Note
-
-This module uses the `cloudposse/label/null` module for naming and tagging
-resources. As such, it also includes a `context.tf` file with additional
-optional variables you can set. Refer to the [`cloudposse/label` documentation](https://registry.terraform.io/modules/cloudposse/label/null/latest)
-for more details on these variables.
+| Name                                 | Description                                                                                                   |                 Type                 | Default  | Required |
+|--------------------------------------|---------------------------------------------------------------------------------------------------------------|:------------------------------------:|:--------:|:--------:|
+| `auth_cognito_idp_arn`               | ARN of the Cognito User Pool to use for authentication. Only appliable if `auth_enabled` is `true`.           |                string                |   null   |    No    |
+| `auth_cognito_idp_client_id`         | Client ID of the Cognito User Pool to use for authentication. Only appliable if `auth_enabled` is `true`.     |                string                |   null   |    No    |
+| `auth_cognito_idp_client_scopes`     | Client scopes of the Cognito User Pool to use for authentication. Only appliable if `auth_enabled` is `true`. |             list(string)             |    []    |    No    |
+| `auth_cognito_idp_client_secret`     | Client secret of the Cognito User Pool to use for authentication. Only appliable if `auth_enabled` is `true`. |                string                |   null   |    No    |
+| `auth_cognito_idp_domain`            | Domain of the Cognito User Pool to use for authentication. Only appliable if `auth_enabled` is `true`.        |                string                |   null   |    No    |
+| `auth_cognito_idp_jwks`              | JWKS of the Cognito User Pool to use for authentication. Only appliable if `auth_enabled` is `true`.          | object({ keys = list(map(string)) }) |   null   |    No    |
+| `auth_enabled`                       | Whether to enable authentication power by Cognito User Pool.                                                  |                 bool                 |  false   |    No    |
+| `aws_account_id`                     | The AWS account ID that the module will be deployed.                                                          |                string                |    ""    |    No    |
+| `aws_region_name`                    | The AWS region name where the module will be deployed.                                                        |                string                |    ""    |    No    |
+| `server_waf_acl_name`                | Name of the WAF ACL to associate with the API Gateway.                                                        |                string                |    ""    |    No    |
+| `website_certificate_arn`            | ARN of the ACM certificate for the domain name.                                                               |                string                |   None   |   Yes    |
+| `website_domain_name`                | Domain name for Yopass website.                                                                               |                string                |   None   |   Yes    |
+| `website_waf_acl_name`               | Name of the WAF ACL to associate with the CloudFront distribution.                                            |                string                |    ""    |    No    |
+| `yopass_encrypted_secret_max_length` | Maximum length of encrypted secrets.                                                                          |                number                |  10000   |    No    |
+| `yopass_version`                     | Version of Yopass to deploy.                                                                                  |                string                | "latest" |    No    |
 
 ## Outputs
 

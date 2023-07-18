@@ -61,6 +61,60 @@ module "yopass_website" {
   dns_alias_enabled   = false
   web_acl_id          = try(data.aws_wafv2_web_acl.website[0].arn, "")
 
+  cache_policy_id            = var.auth_enabled ? try(data.aws_cloudfront_cache_policy.disabled[0].id) : try(data.aws_cloudfront_cache_policy.optimized[0].id)
+  origin_request_policy_id   = try(data.aws_cloudfront_origin_request_policy.cors_s3origin[0].id)
+  response_headers_policy_id = try(data.aws_cloudfront_response_headers_policy.cors_preflight_hsts[0].id)
+
+  lambda_function_association = var.auth_enabled ? [
+    {
+      event_type   = "viewer-request"
+      lambda_arn   = module.cloudfront_middleware_at_edge.auth_services.check_auth.fn_arn
+      include_body = false
+    },
+  ] : []
+
+  custom_origins = var.auth_enabled ? [{
+    # blackhole (never served) origin assigned to auth-at-edge behaviors/paths
+    domain_name    = "blackhole.example.com"
+    origin_id      = "blackhole"
+    origin_path    = ""
+    custom_headers = []
+    custom_origin_config = {
+      http_port                = 80
+      https_port               = 443
+      origin_protocol_policy   = "https-only"
+      origin_ssl_protocols     = ["TLSv1.2"]
+      origin_keepalive_timeout = 60
+      origin_read_timeout      = 60
+    }
+  }] : []
+
+  ordered_cache = var.auth_enabled ? [
+    for x in module.cloudfront_middleware_at_edge.auth_routes : {
+      target_origin_id            = "blackhole"
+      path_pattern                = x.path_pattern
+      allowed_methods             = x.allowed_methods
+      compress                    = x.compress
+      cache_policy_id             = x.cache_policy
+      origin_request_policy_id    = x.origin_request_policy
+      response_headers_policy_id  = x.response_headers_policy
+      lambda_function_association = x.lambda_function_association
+      viewer_protocol_policy      = x.viewer_protocol_policy
+
+      // using cf policies so these are not used but are required to be defined
+      cached_methods                    = ["GET", "HEAD"]
+      default_ttl                       = null
+      forward_cookies                   = null
+      forward_cookies_whitelisted_names = null
+      forward_header_values             = null
+      forward_query_string              = null
+      function_association              = []
+      max_ttl                           = null
+      min_ttl                           = null
+      trusted_key_groups                = null
+      trusted_signers                   = null
+  }] : []
+
   cloudfront_access_log_create_bucket = false
   cloudfront_access_logging_enabled   = false
   s3_access_logging_enabled           = false
@@ -90,6 +144,49 @@ data "aws_wafv2_web_acl" "website" {
   scope = "CLOUDFRONT"
 }
 
+data "aws_cloudfront_cache_policy" "disabled" {
+  count = module.yopass_label.enabled ? 1 : 0
+  name  = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_cache_policy" "optimized" {
+  count = module.yopass_label.enabled ? 1 : 0
+  name  = "Managed-CachingOptimized"
+}
+
+data "aws_cloudfront_origin_request_policy" "cors_s3origin" {
+  count = module.yopass_label.enabled ? 1 : 0
+  name  = "Managed-CORS-S3Origin"
+}
+
+data "aws_cloudfront_response_headers_policy" "cors_preflight_hsts" {
+  count = module.yopass_label.enabled ? 1 : 0
+  name  = "Managed-CORS-with-preflight-and-SecurityHeadersPolicy"
+}
+
+# ------------------------------------------------------------- website-auth ---
+
+module "cloudfront_middleware_at_edge" {
+  source  = "sgtoj/cloudfront-middleware-at-edge/aws"
+  version = "0.3.0"
+
+  enabled    = var.auth_enabled
+  attributes = ["mw"]
+
+  auth_service_config = {
+    enabled                   = var.auth_enabled
+    aws_region                = local.aws_region_name
+    log_level                 = "info"
+    cognito_idp_arn           = var.auth_cognito_idp_arn
+    cognito_idp_domain        = var.auth_cognito_idp_domain
+    cognito_idp_client_id     = var.auth_cognito_idp_client_id
+    cognito_idp_client_secret = var.auth_cognito_idp_client_secret
+    cognito_idp_client_scopes = var.auth_cognito_idp_client_scopes
+    cognito_idp_jwks          = var.auth_cognito_idp_jwks
+  }
+
+  context = module.yopass_label.context
+}
 
 # ------------------------------------------------------------------- server ---
 
@@ -112,7 +209,8 @@ module "yopass_server_code" {
 }
 
 resource "aws_cloudwatch_log_group" "this" {
-  count             = module.yopass_label.enabled ? 1 : 0
+  count = module.yopass_label.enabled ? 1 : 0
+
   name              = "/aws/lambda/${module.yopass_label.id}"
   retention_in_days = 90
 

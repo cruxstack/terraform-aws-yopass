@@ -1,14 +1,15 @@
-# Example: Complete
+# Example: Complete with Authentication
 
 This example demonstrates how to use the Terraform AWS Yopass module to deploy
-Yopass with Route53 for DNS and AWS Certificate Manager (ACM) for SSL
-certificates.
+Yopass with Cognito User Pool for authentication, Route53 for DNS, and AWS
+Certificate Manager (ACM) for SSL certificates.
 
 ## Overview
 
 - An ACM SSL certificate is created for the website domain.
-- The Yopass module is used to deploy Yopass with the provided domain name and
-  SSL certificate.
+- A Cognito User Pool is created to manage the authentication of users.
+- The Yopass module is used to deploy Yopass with the provided domain name, SSL
+  certificate, and Cognito User Pool for authentication.
 - A Route53 alias record is created to point to the Yopass CloudFront
   distribution.
 
