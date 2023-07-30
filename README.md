@@ -1,7 +1,5 @@
 # Terraform Module: Yopass (via AWS Serverless)
 
-> :warning: **This module is moved to the [CruxStack organization](https://github.com/cruxstack.terraform-aws-yopass). Please switch to [`cruxstack/yopass/aws` Terraform module](https://registry.terraform.io/modules/cruxstack/yopass/aws/latest).**
-
 This Terraform module deploys a [Yopass](https://github.com/jhaals/yopass)
 server using a serverless architecture on AWS. It leverages AWS Lambda,
 DynamoDB, and CloudFront to provide a highly available, scalable, and
