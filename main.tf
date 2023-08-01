@@ -34,8 +34,8 @@ resource "random_string" "yopass_random_suffix" {
 # ------------------------------------------------------------------ website ---
 
 module "yopass_website_assets" {
-  source  = "sgtoj/artifact-packager/docker"
-  version = "1.2.3"
+  source  = "cruxstack/artifact-packager/docker"
+  version = "1.3.2"
 
   attributes             = ["website"]
   artifact_src_path      = "/tmp/package.zip"
@@ -124,8 +124,8 @@ module "yopass_website" {
 }
 
 module "yopass_website_uploader" {
-  source  = "sgtoj/s3-zip-uploader/aws"
-  version = "1.1.0"
+  source  = "cruxstack/s3-zip-uploader/aws"
+  version = "1.1.4"
 
   artifact_dst_bucket_arn = module.yopass_website.s3_bucket_arn
   artifact_src_local_path = module.yopass_website_assets.artifact_package_path
@@ -167,8 +167,8 @@ data "aws_cloudfront_response_headers_policy" "cors_preflight_hsts" {
 # ------------------------------------------------------------- website-auth ---
 
 module "cloudfront_middleware_at_edge" {
-  source  = "sgtoj/cloudfront-middleware-at-edge/aws"
-  version = "0.3.0"
+  source  = "cruxstack/cloudfront-middleware-at-edge/aws"
+  version = "0.3.2"
 
   enabled    = var.auth_enabled
   attributes = ["mw"]
@@ -191,8 +191,8 @@ module "cloudfront_middleware_at_edge" {
 # ------------------------------------------------------------------- server ---
 
 module "yopass_server_code" {
-  source  = "sgtoj/artifact-packager/docker"
-  version = "1.2.3"
+  source  = "cruxstack/artifact-packager/docker"
+  version = "1.3.2"
 
   attributes             = ["server"]
   artifact_src_path      = "/tmp/package.zip"
