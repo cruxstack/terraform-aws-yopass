@@ -54,7 +54,7 @@ module "example_label" {
 
   enabled = true
   name    = "eg-yopass-${random_string.example_random_suffix.result}"
-  tags    = { tf_module = "sgtoj/yopass/aws", tf_module_example = "complete-with-auth" }
+  tags    = { tf_module = "cruxstack/yopass/aws", tf_module_example = "complete-with-auth" }
   context = module.this.context
 }
 
