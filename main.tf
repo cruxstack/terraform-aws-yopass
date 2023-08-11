@@ -54,7 +54,7 @@ module "yopass_website_assets" {
 
 module "yopass_website" {
   source  = "cloudposse/cloudfront-s3-cdn/aws"
-  version = "0.90.0"
+  version = "0.92.0"
 
   aliases             = [var.website_domain_name]
   acm_certificate_arn = var.website_certificate_arn
