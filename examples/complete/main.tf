@@ -1,4 +1,7 @@
 locals {
+  name = "tf-example-complete-${random_string.example_random_suffix.result}"
+  tags = { tf_module = "cruxstack/yopass/aws", tf_module_example = "complete" }
+
   domain_name                  = var.domain_name
   domain_parent_hosted_zone_id = var.domain_parent_hosted_zone_id
 }
@@ -11,7 +14,26 @@ module "yopass" {
   website_domain_name     = local.domain_name
   website_certificate_arn = module.ssl_certificate.arn
 
-  tags = { tf_module = "cruxstack/yopass/aws", tf_module_example = "complete" }
+  context = module.example_label.context
+}
+
+# ===================================================== supporting-resources ===
+
+module "example_label" {
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+
+  name        = local.name
+  environment = "use1" # us-east-1
+  tags        = local.tags
+
+  context = module.this.context
+}
+
+resource "random_string" "example_random_suffix" {
+  length  = 6
+  special = false
+  upper   = false
 }
 
 # ---------------------------------------------------------------------- dns ---
@@ -26,7 +48,7 @@ module "dns" {
   target_zone_id  = module.yopass.website_cloudfront_hosted_zone_id
   ipv6_enabled    = false
 
-  context = module.this.context
+  context = module.example_label.context
 }
 
 module "ssl_certificate" {
@@ -38,6 +60,6 @@ module "ssl_certificate" {
   ttl                               = "60"
   zone_id                           = local.domain_parent_hosted_zone_id
 
-  tags    = merge(module.this.tags, { Name = module.this.id })
-  context = module.this.context
+  context = module.example_label.context
+  tags    = merge(module.example_label.tags, { Name = module.this.id })
 }
