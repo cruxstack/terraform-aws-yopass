@@ -1,30 +1,25 @@
 locals {
+  name = "tf-example-complete-with-auth-${random_string.example_random_suffix.result}"
+  tags = { tf_module = "cruxstack/yopass/aws", tf_module_example = "complete-with-auth" }
+
   domain_name                  = var.domain_name
   domain_parent_hosted_zone_id = var.domain_parent_hosted_zone_id
 }
 
 # ================================================================== example ===
 
-module "cognito_user_pool_client" {
-  source  = "rallyware/cognito-user-pool-client/aws"
+module "cognito_userpool_clients" {
+  source  = "cruxstack/cognito-userpool-clients/aws"
   version = "0.2.0"
 
-  user_pool_id                         = module.cognito_user_pool.id
-  allowed_oauth_flows_user_pool_client = true
-  generate_secret                      = true
-  allowed_oauth_flows                  = ["code", ]
-  allowed_oauth_scopes                 = ["openid", "email", "profile"]
-  callback_urls                        = ["https://${local.domain_name}/_edge/auth/signin"]
-  logout_urls                          = ["https://google.com"]
-  supported_identity_providers         = ["COGNITO"]
+  userpool_id = module.cognito_userpool.id
 
-  explicit_auth_flows = [
-    "ALLOW_USER_PASSWORD_AUTH",
-    "ALLOW_REFRESH_TOKEN_AUTH",
-    "ALLOW_USER_SRP_AUTH",
-    "ALLOW_CUSTOM_AUTH",
-    "ALLOW_ADMIN_USER_PASSWORD_AUTH",
-  ]
+  clients = {
+    yopass = {
+      callback_urls = ["https://${local.domain_name}/_edge/auth/signin"]
+      logout_urls   = ["https://google.com"]
+    }
+  }
 
   context = module.example_label.context
 }
@@ -36,10 +31,10 @@ module "yopass" {
   website_certificate_arn = module.ssl_certificate.arn
 
   auth_enabled                   = true
-  auth_cognito_idp_arn           = module.cognito_user_pool.arn
+  auth_cognito_idp_arn           = module.cognito_userpool.arn
   auth_cognito_idp_domain        = "${aws_cognito_user_pool_domain.this.domain}.auth.us-east-1.amazoncognito.com"
-  auth_cognito_idp_client_id     = module.cognito_user_pool_client.id
-  auth_cognito_idp_client_secret = module.cognito_user_pool_client.client_secret
+  auth_cognito_idp_client_id     = module.cognito_userpool_clients.clients.yopass.id
+  auth_cognito_idp_client_secret = module.cognito_userpool_clients.clients.yopass.client_secret
   auth_cognito_idp_client_scopes = ["openid", "email", "profile"]
   auth_cognito_idp_jwks          = jsondecode(data.http.cognito_user_pool_jwks.response_body)
 
@@ -53,8 +48,8 @@ module "example_label" {
   version = "0.25.0"
 
   enabled = true
-  name    = "eg-yopass-${random_string.example_random_suffix.result}"
-  tags    = { tf_module = "cruxstack/yopass/aws", tf_module_example = "complete-with-auth" }
+  name    = local.name
+  tags    = local.tags
   context = module.this.context
 }
 
@@ -94,25 +89,19 @@ module "ssl_certificate" {
 
 # ------------------------------------------------------------------ cognito ---
 
-module "cognito_user_pool" {
-  source  = "lgallard/cognito-user-pool/aws"
-  version = "0.22.0"
+module "cognito_userpool" {
+  source  = "cruxstack/cognito-userpool/aws"
+  version = "0.1.1"
 
-  user_pool_name           = module.example_label.id
-  alias_attributes         = []
-  auto_verified_attributes = []
-  deletion_protection      = "INACTIVE"
+  deletion_protection      = false
+  admin_create_user_config = { allow_admin_create_user_only = true }
 
-  admin_create_user_config = {
-    allow_admin_create_user_only = true
-  }
-
-  tags = module.example_label.tags
+  context = module.example_label.context
 }
 
 resource "aws_cognito_user_pool_domain" "this" {
   domain       = module.example_label.id
-  user_pool_id = module.cognito_user_pool.id
+  user_pool_id = module.cognito_userpool.id
 }
 
 resource "random_password" "test_user_password" {
@@ -126,12 +115,12 @@ resource "random_password" "test_user_password" {
 }
 
 resource "aws_cognito_user" "test_user" {
-  user_pool_id = module.cognito_user_pool.id
+  user_pool_id = module.cognito_userpool.id
   username     = "test@example.com"
   password     = random_password.test_user_password.result
   enabled      = true
 }
 
 data "http" "cognito_user_pool_jwks" {
-  url = "https://${module.cognito_user_pool.endpoint}/.well-known/jwks.json"
+  url = "https://${module.cognito_userpool.endpoint}/.well-known/jwks.json"
 }
