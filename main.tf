@@ -1,6 +1,6 @@
 locals {
   name            = coalesce(module.this.name, var.name, "yopass-${random_string.yopass_random_suffix.result}")
-  aws_account_id  = try(coalesce(var.aws_account_id, data.aws_caller_identity.current[0].account_id), "")
+  aws_account_id  = try(coalesce(var.aws_account_id, data.aws_caller_identity.current[0].account_id), "") # tflint-ignore: terraform_unused_declarations
   aws_region_name = try(coalesce(var.aws_region_name, data.aws_region.current[0].name), "")
 
   yopass_server_apigw_url = module.yopass_label.enabled ? aws_api_gateway_stage.this[0].invoke_url : ""
