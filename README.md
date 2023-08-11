@@ -20,12 +20,6 @@ cost-effective solution. The design adheres to a pay-per-use model.
 - **User Authentication Layer**: An optional user authentication layer is
   available, securing access to the Yopass website using AWS Cognito.
 
-## Prerequisites
-
-- Terraform v0.13.0 or newer
-- An AWS account
-- Docker for building Yopass server artifact
-
 ## Usage
 
 ```hcl
@@ -33,19 +27,10 @@ module "yopass" {
   source  = "cruxstack/yopass/aws"
   version = "x.x.x"
 
-  name                               = "yopass"
-  yopass_encrypted_secret_max_length = 10000
   website_domain_name                = "yopass.example.com"
   website_certificate_arn            = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
 }
 ```
-
-## Requirements
-
-- Terraform 0.13.0 or later
-- AWS provider
-- Docker provider
-- Docker installed and running on the machine where Terraform is executed
 
 ## Inputs
 
