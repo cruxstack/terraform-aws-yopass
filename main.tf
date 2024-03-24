@@ -222,9 +222,9 @@ resource "aws_lambda_function" "this" {
 
   function_name = module.yopass_label.id
   filename      = module.yopass_server_code.artifact_package_path
-  handler       = "main"
-  runtime       = "go1.x"
-  timeout       = 45
+  handler       = "bootstrap"
+  runtime       = "provided.al2023"
+  timeout       = 15
   role          = aws_iam_role.this[0].arn
   layers        = []
 
