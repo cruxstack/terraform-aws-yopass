@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------- base ---
 
-FROM golang:1.22.1 as base
+FROM golang:1.22 as base
 
 ARG YOPASS_VERSION=latest
 
