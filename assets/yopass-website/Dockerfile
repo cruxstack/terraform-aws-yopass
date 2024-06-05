@@ -1,9 +1,11 @@
 # --------------------------------------------------------------------- base ---
 
-FROM node:18 as base
+FROM node:20 as base
 
 RUN mkdir -p /opt/app
 WORKDIR /opt/app
+
+ARG YOPASS_VERSION=latest
 
 RUN git clone https://github.com/jhaals/yopass.git .
 RUN if [ "$YOPASS_VERSION" != "latest" ] ; then git checkout $YOPASS_VERSION ; fi
