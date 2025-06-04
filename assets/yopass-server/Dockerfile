@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------- base ---
 
-FROM golang:1.22 as base
+FROM golang:1.24 AS base
 
 ARG YOPASS_VERSION=latest
 
@@ -14,15 +14,15 @@ WORKDIR /opt/app
 RUN git clone https://github.com/jhaals/yopass.git .
 RUN if [ "$YOPASS_VERSION" != "latest" ] ; then git checkout $YOPASS_VERSION ; fi
 RUN go mod download
-RUN cd deploy/aws-lambda && \
+RUN cd deploy/cdk && \
     go mod tidy && \
     go build -o bootstrap
 
 # ------------------------------------------------------------------ package ---
 
-FROM alpine:latest as package
+FROM alpine:latest AS package
 
-COPY --from=base /opt/app/deploy/aws-lambda/bootstrap /opt/app/dist/bootstrap
+COPY --from=base /opt/app/deploy/cdk/bootstrap /opt/app/dist/bootstrap
 
 RUN apk add zip \
     && cd /opt/app/dist \
