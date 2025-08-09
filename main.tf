@@ -1,9 +1,14 @@
 locals {
   name            = coalesce(module.this.name, var.name, "yopass-${random_string.yopass_random_suffix.result}")
   aws_account_id  = try(coalesce(var.aws_account_id, data.aws_caller_identity.current[0].account_id), "") # tflint-ignore: terraform_unused_declarations
-  aws_region_name = try(coalesce(var.aws_region_name, data.aws_region.current[0].name), "")
+  aws_region_name = try(coalesce(var.aws_region_name, data.aws_region.current[0].region), "")
+  aws_partition   = one(data.aws_partition.current.*.partition)
 
   yopass_server_apigw_url = module.yopass_label.enabled ? aws_api_gateway_stage.this[0].invoke_url : ""
+
+  iam_role_policies = {
+    access = one(data.aws_iam_policy_document.this.*.json)
+  }
 }
 
 data "aws_caller_identity" "current" {
@@ -12,6 +17,10 @@ data "aws_caller_identity" "current" {
 
 data "aws_region" "current" {
   count = module.this.enabled && var.aws_region_name == "" ? 1 : 0
+}
+
+data "aws_partition" "current" {
+  count = module.this.enabled ? 1 : 0
 }
 
 # =================================================================== yopass ===
@@ -34,8 +43,7 @@ resource "random_string" "yopass_random_suffix" {
 # ------------------------------------------------------------------ website ---
 
 module "yopass_website_assets" {
-  source  = "cruxstack/artifact-packager/docker"
-  version = "1.3.7"
+  source = "github.com/cruxstack/terraform-docker-artifact-packager?ref=v1.3.7"
 
   attributes             = ["website"]
   artifact_src_path      = "/tmp/package.zip"
@@ -53,8 +61,7 @@ module "yopass_website_assets" {
 }
 
 module "yopass_website" {
-  source  = "cloudposse/cloudfront-s3-cdn/aws"
-  version = "0.94.0"
+  source = "github.com/cloudposse/terraform-aws-cloudfront-s3-cdn?ref=v0.98.1"
 
   aliases             = [var.website_domain_name]
   acm_certificate_arn = var.website_certificate_arn
@@ -124,8 +131,7 @@ module "yopass_website" {
 }
 
 module "yopass_website_uploader" {
-  source  = "cruxstack/s3-zip-uploader/aws"
-  version = "1.3.1"
+  source = "github.com/cruxstack/terraform-aws-s3-zip-uploader?ref=v1.5.0"
 
   artifact_dst_bucket_arn = module.yopass_website.s3_bucket_arn
   artifact_src_local_path = module.yopass_website_assets.artifact_package_path
@@ -167,8 +173,7 @@ data "aws_cloudfront_response_headers_policy" "cors_preflight_hsts" {
 # ------------------------------------------------------------- website-auth ---
 
 module "cloudfront_middleware_at_edge" {
-  source  = "cruxstack/cloudfront-middleware-at-edge/aws"
-  version = "0.3.4"
+  source = "github.com/cruxstack/terraform-aws-cloudfront-middleware-at-edge?ref=v0.5.0"
 
   enabled    = var.auth_enabled
   attributes = ["mw"]
@@ -191,8 +196,7 @@ module "cloudfront_middleware_at_edge" {
 # ------------------------------------------------------------------- server ---
 
 module "yopass_server_code" {
-  source  = "cruxstack/artifact-packager/docker"
-  version = "1.3.7"
+  source = "github.com/cruxstack/terraform-docker-artifact-packager?ref=v1.3.7"
 
   attributes             = ["server"]
   artifact_src_path      = "/tmp/package.zip"
@@ -283,8 +287,7 @@ resource "aws_api_gateway_integration" "lambda" {
 resource "aws_api_gateway_deployment" "this" {
   count = module.yopass_label.enabled ? 1 : 0
 
-  rest_api_id       = aws_api_gateway_rest_api.this[0].id
-  stage_description = "live"
+  rest_api_id = aws_api_gateway_rest_api.this[0].id
 
   depends_on = [
     aws_api_gateway_integration.lambda
@@ -367,16 +370,22 @@ resource "aws_iam_role" "this" {
     }]
   })
 
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  ]
-
-  inline_policy {
-    name   = "access"
-    policy = data.aws_iam_policy_document.this[0].json
-  }
-
   tags = module.yopass_label.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_managed_instance_core" {
+  count = module.this.enabled ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = "arn:${local.aws_partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "this" {
+  for_each = { for k, v in local.iam_role_policies : k => v if v != null }
+
+  name   = each.key
+  role   = resource.aws_iam_role.this[0].name
+  policy = each.value
 }
 
 data "aws_iam_policy_document" "this" {
