@@ -131,7 +131,7 @@ module "yopass_website" {
 }
 
 module "yopass_website_uploader" {
-  source = "github.com/cruxstack/terraform-aws-s3-zip-uploader?ref=v1.5.0"
+  source = "github.com/cruxstack/terraform-aws-s3-zip-uploader?ref=v1.6.1"
 
   artifact_dst_bucket_arn = module.yopass_website.s3_bucket_arn
   artifact_src_local_path = module.yopass_website_assets.artifact_package_path
