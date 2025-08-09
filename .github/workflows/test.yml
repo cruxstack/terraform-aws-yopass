@@ -2,18 +2,70 @@ name: test
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  TF_IN_AUTOMATION: true
 
 jobs:
-  test:
+  lint:
+    name: lint
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-      - name: Setup Terraform
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: setup terraform
         uses: hashicorp/setup-terraform@v3
-      - name: Terraform Setup
+
+      - name: Cache Terraform Plugins
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/.terraform.d/plugin-cache
+          key: tf-plugins-${{ runner.os }}-${{ hashFiles('**/.terraform.lock.hcl') }}
+
+      - name: Initialize Terraform
         run:  terraform init
-      - name: Terraform Validate
-        run:  terraform validate
+
+      - name: Suggest Terraform Format
+        if: github.event_name == 'pull_request'
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: terraform-fmt
+          level: warning
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_level: error
+
+      - name: Check Terraform Format
+        if: github.event_name == 'push'
+        run: terraform fmt -recursive -check
+
+      - name: Validate Terraform
+        uses: reviewdog/action-terraform-validate@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+          fail_level: error
+
+      - name: Lint Terraform
+        uses: reviewdog/action-tflint@v1
+        with:
+          reporter: github-pr-review
+          filter_mode: nofilter
+          fail_level: error
+
+      - name: Lint GitHub Actions
+        uses: reviewdog/action-actionlint@v1
+        with:
+          reporter: github-pr-check
+          fail_level: error
+          filter_mode: nofilter
+
